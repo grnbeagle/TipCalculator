@@ -7,6 +7,7 @@
 //
 
 #import "CalcViewController.h"
+#import "SettingsViewController.h"
 
 @interface CalcViewController ()
 @property (weak, nonatomic) IBOutlet UITextField *txtBillAmount;
@@ -23,6 +24,7 @@
 - (IBAction)onTap:(id)sender;
 - (IBAction)onTipPercentChanged:(id)sender;
 - (void)updateValues;
+- (void)onSettingsButton;
 @end
 
 @implementation CalcViewController
@@ -39,6 +41,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(onSettingsButton)];
+
     // TODO: Make these configurable
     self.sliderTipPercent.minimumValue = 10;
     self.sliderTipPercent.maximumValue = 20;
@@ -73,5 +78,9 @@
     self.lblTipPercent.text = [NSString stringWithFormat:@"%d%%", ((int)self.sliderTipPercent.value)];
     self.lblTipAmount.text = [NSString stringWithFormat:@"$%0.2f", tipAmount];
     self.lblTotalAmount.text = [NSString stringWithFormat:@"$%0.2f", totalAmount];
+}
+
+- (void)onSettingsButton {
+    [self.navigationController pushViewController:[[SettingsViewController alloc] init] animated:YES];
 }
 @end
