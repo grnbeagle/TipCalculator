@@ -5,29 +5,16 @@
 //  Created by Amie Kweon on 5/4/14.
 //  Copyright (c) 2014 Amie Kweon. All rights reserved.
 //
+//  Calculator View: display a text field for bill, a slider for selecting tip percent,
+//  and labels for the total.
+//  http://cl.ly/image/2j3N2v1A3y2e
 
 #import "CalcViewController.h"
 #import "SettingsViewController.h"
 
-@interface CalcViewController ()
-@property (weak, nonatomic) IBOutlet UITextField *txtBillAmount;
-@property (weak, nonatomic) IBOutlet UISlider *sliderTipPercent;
-@property (weak, nonatomic) IBOutlet UILabel *lblMinimumPercent;
-@property (weak, nonatomic) IBOutlet UILabel *lblMaximumPercent;
-
-@property (weak, nonatomic) IBOutlet UILabel *lblTipPercent;
-@property (weak, nonatomic) IBOutlet UILabel *lblTipAmount;
-@property (weak, nonatomic) IBOutlet UILabel *lblTotalAmount;
-
-@property (strong, nonatomic) IBOutlet UITapGestureRecognizer *onTap;
-
-- (IBAction)onTap:(id)sender;
-- (IBAction)onTipPercentChanged:(id)sender;
-- (void)updateValues;
-- (void)onSettingsButton;
-@end
-
 @implementation CalcViewController
+
+NSString *currencySymbol;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -42,12 +29,17 @@
 {
     [super viewDidLoad];
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(onSettingsButton)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
+                                              initWithTitle:@"Settings"
+                                              style:UIBarButtonItemStylePlain
+                                              target:self
+                                              action:@selector(onSettingsButton)];
+    [self loadData];
+    [self updateValues];
+}
 
-    // TODO: Make these configurable
-    self.sliderTipPercent.minimumValue = 10;
-    self.sliderTipPercent.maximumValue = 20;
-    
+- (void)viewWillAppear:(BOOL)animated {
+    [self loadData];
     [self updateValues];
 }
 
@@ -76,8 +68,30 @@
     float totalAmount = billAmount + tipAmount;
     
     self.lblTipPercent.text = [NSString stringWithFormat:@"%d%%", ((int)self.sliderTipPercent.value)];
-    self.lblTipAmount.text = [NSString stringWithFormat:@"$%0.2f", tipAmount];
-    self.lblTotalAmount.text = [NSString stringWithFormat:@"$%0.2f", totalAmount];
+    self.lblTipAmount.text = [NSString stringWithFormat:@"%@%0.2f", currencySymbol, tipAmount];
+    self.lblTotalAmount.text = [NSString stringWithFormat:@"%@%0.2f", currencySymbol, totalAmount];
+}
+
+- (void)loadData {
+    NSUserDefaults *store = [NSUserDefaults standardUserDefaults];
+    currencySymbol = [store objectForKey:@"currencySymbol"];
+    if (currencySymbol == nil) {
+        currencySymbol = @"$";
+    }
+    int minPercent = [store integerForKey:@"minPercent"];
+    int maxPercent = [store integerForKey:@"maxPercent"];
+    // Use default values if not in data store
+    if (minPercent == 0) {
+        minPercent = 10;
+    }
+    if (maxPercent == 0) {
+        maxPercent = 20;
+    }
+    self.sliderTipPercent.minimumValue = minPercent;
+    self.sliderTipPercent.maximumValue = maxPercent;
+    self.lblCurrencySymbol.text = currencySymbol;
+    self.lblMinimumPercent.text = [NSString stringWithFormat:@"%d%%", minPercent];
+    self.lblMaximumPercent.text = [NSString stringWithFormat:@"%d%%", maxPercent];
 }
 
 - (void)onSettingsButton {
